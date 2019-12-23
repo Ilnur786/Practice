@@ -36,5 +36,6 @@ def get_set(path, number):
                     validation.add(take_ml)
             global_result.add(TUPLE)
 
+
 for number in range(4, 7):
     get_set('/home/nadia/data/True_pairs_new', number)
