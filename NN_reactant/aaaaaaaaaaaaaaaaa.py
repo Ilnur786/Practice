@@ -1,11 +1,18 @@
-from pickle import load
+from pickle import load, dump
 
-with open("false_base/false_test_set_part2.pickle", 'rb') as f:
-    var = load(f)
-
-print(len(var))
+with open("test_train/false_test_set_part2.pickle", 'rb') as f:
+    false_test_set_part2 = load(f)
 
 with open("test_train/false_test_set.pickle", 'rb') as f:
-    c = load(f)
+    false_test_set = load(f)
 
-print(type(c))
+false_test_set_full = set()
+false_test_set_full.update(false_test_set)
+false_test_set_full.update(false_test_set_part2)
+
+with open('test_train/false_test_set_full.pickle', 'wb') as f:
+    dump(false_test_set_full, f)
+
+print(len(false_test_set_full))
+
+
