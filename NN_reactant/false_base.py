@@ -145,7 +145,3 @@ logger.info('колличество тюплов в true_train_set = {}'.format(
 # пересекалось молекул false_train_molecules_ids & true_test_molecules_ids:  0
 # пересекалось молекул false_test_molecules_ids & true_train_molecules_ids:  0
 # количество тюплов потеряно: false_lost_set = 1373036
-
-# Задачи на сегодня?
-# 1) добавить в false_test_set кортежи из true_test_set
-# 2) из кортежей айди, сделать кортежи молекул контейнер

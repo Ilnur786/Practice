@@ -1,37 +1,56 @@
 from CGRtools.files import *
 from pickle import load, dump
 
-with open('uspto/double_reactants_rules.pickle', 'rb') as f:
-    double_reactants_rules = load(f)
+with open('uspto/reaction_containers.pickle', 'rb') as g:
+    reaction_containers = load(g)
 
-with open('/home/ilnur/Practice/NN_reactant/uspto/reaction_containers.pickle', 'rb') as f:
-    reaction_containers = load(f)
+with open('uspto/all_rules_ids.pickle', 'rb') as h:
+    ids = load(h)
 
-with open('uspto/all_rules_ids.pickle', 'rb') as f:
-    ids = load(f)
 
-result = []
+def divide_chunks(l, n):
+    l = list(l)
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
+a = 1
+result = set()
 with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
     for i, reactions in enumerate(ids):
         products = []
         for reaction_num in reactions:
-            for k, rules_reactants_atoms in enumerate([x for x in reaction_containers[i].reactants[0].connected_components]):
-                for j, rdf_reactants_atoms in enumerate([y.atoms_numbers for y in f[reaction_num].reactants]):
-                    if set(rules_reactants_atoms).issubset(set(rdf_reactants_atoms)) and k == 0:
-                        A = f[reaction_num].reactants[j]
-                    elif set(rules_reactants_atoms).issubset(set(rdf_reactants_atoms)) and k == 1:
-                        B = f[reaction_num].reactants[j]
-            for rules_products_atoms in [x for x in reaction_containers[i].products[0].connected_components]:
-                for o, rdf_products_atoms in enumerate([y.atoms_numbers for y in f[reaction_num].products]):
-                    if set(rules_products_atoms).issubset(rdf_products_atoms):
-                        products.append(f[reaction_num].products[o])
+            try:
+                for k, rules_reactant in enumerate(reaction_containers[i].reactants[0].split()):
+                    for rdf_reactant in [x for x in f[reaction_num - 1].reactants]:
+                        if rules_reactant <= rdf_reactant and k == 0:
+                            A = rdf_reactant
+                        elif rules_reactant <= rdf_reactant and k == 1:
+                            B = rdf_reactant
+            except TypeError:
+                print(f'номер правила {i}')
+                print(f'id реакции {reaction_num - 1}')
+            for rules_product in reaction_containers[i].products[0].split():
+                for rdf_product in [x for x in f[reaction_num - 1].products]:
+                    if rules_product <= rdf_product:
+                        products.append(rdf_product)
             for p in products:
-                result.append((A, p, B, True))
-                result.append((B, p, A, True))
-
-    c = reaction_containers[0].reactants[0].split()
-    for i in c:
-        for j in [x for x in f[0].reactants]:
-            print(i <= j)
-with open('uspto/new_true_ATB.pickle', 'wb') as f:
-    dump(result, f)
+                result.add((A, p, B, True))
+                result.add((B, p, A, True))
+            break
+        if len(result) >= 5000:
+            for chunk in divide_chunks(result, 5000):
+                if len(chunk) < 5000:
+                    result = set(chunk)
+                else:
+                    print(f'dumping {i}')
+                    with open('uspto/new_true_ATB/{}.pickle'.format(a), 'wb') as b:
+                        dump(chunk, b)
+                    print('dumping successful!')
+                    result = set()
+                    a += 1
+        if i == len(ids) - 1:
+            print('dumping last time...')
+            with open('uspto/new_true_ATB/{}.pickle'.format(a), 'wb') as b:
+                dump(result, b)
+            print('dumping successful!')
