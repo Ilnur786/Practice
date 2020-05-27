@@ -8,10 +8,10 @@ with open('uspto/all_rules_ids.pickle', 'rb') as h:
     ids = load(h)
 
 
-def divide_chunks(l, n):
-    l = list(l)
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
+def divide_chunks(o, n):
+    o = list(o)
+    for z in range(0, len(o), n):
+        yield o[z:z + n]
 
 
 a = 1
@@ -20,19 +20,18 @@ with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
     for i, reactions in enumerate(ids):
         products = []
         for reaction_num in reactions:
-            try:
-                for k, rules_reactant in enumerate(reaction_containers[i].reactants[0].split()):
-                    for rdf_reactant in [x for x in f[reaction_num - 1].reactants]:
-                        if rules_reactant <= rdf_reactant and k == 0:
-                            A = rdf_reactant
-                        elif rules_reactant <= rdf_reactant and k == 1:
-                            B = rdf_reactant
-            except TypeError:
-                print(f'номер правила {i}')
-                print(f'id реакции {reaction_num - 1}')
+            for k, rules_reactant in enumerate(reaction_containers[i].reactants[0].split()):
+                for rdf_reactant in [x for x in f[reaction_num - 1].reactants]:
+                    if rules_reactant <= rdf_reactant and k == 0:
+                        A = rdf_reactant
+                        A.meta['id'] = reaction_num - 1
+                    elif rules_reactant <= rdf_reactant and k == 1:
+                        B = rdf_reactant
+                        B.meta['id'] = reaction_num - 1
             for rules_product in reaction_containers[i].products[0].split():
                 for rdf_product in [x for x in f[reaction_num - 1].products]:
                     if rules_product <= rdf_product:
+                        rdf_product.meta['id'] = reaction_num - 1
                         products.append(rdf_product)
             for p in products:
                 result.add((A, p, B, True))
