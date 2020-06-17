@@ -16,10 +16,11 @@ def divide_chunks(o, n):
 
 a = 1
 result = set()
+
 with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
     for i, reactions in enumerate(ids):
-        products = []
         for reaction_num in reactions:
+            products = []
             for k, rules_reactant in enumerate(reaction_containers[i].reactants[0].split()):
                 for rdf_reactant in [x for x in f[reaction_num - 1].reactants]:
                     if rules_reactant <= rdf_reactant and k == 0:
@@ -33,10 +34,12 @@ with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
                     if rules_product <= rdf_product:
                         rdf_product.meta['id'] = reaction_num - 1
                         products.append(rdf_product)
-            for p in products:
-                result.add((A, p, B, True))
-                result.add((B, p, A, True))
-            break
+            if A and B and products:
+                for p in products:
+                    result.add((A, p, B, True))
+                    result.add((B, p, A, True))
+                    A = None
+                    B = None
         if len(result) >= 5000:
             for chunk in divide_chunks(result, 5000):
                 if len(chunk) < 5000:
