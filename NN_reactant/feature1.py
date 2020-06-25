@@ -10,42 +10,48 @@ with open('uspto/all_rules_ids.pickle', 'rb') as h:
 
 def divide_chunks(o, n):
     o = list(o)
-    for z in range(0, len(o), n):
+    for j in range(0, len(o), n):
         yield o[z:z + n]
 
 
 a = 1
 result = set()
+A, B = None, None
 
 with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
     for i, reactions in enumerate(ids):
         for reaction_num in reactions:
             products = []
             for k, rules_reactant in enumerate(reaction_containers[i].reactants[0].split()):
-                for rdf_reactant in [x for x in f[reaction_num - 1].reactants]:
+                for z, rdf_reactant in enumerate([x for x in f[reaction_num - 1].reactants]):
                     if rules_reactant <= rdf_reactant and k == 0:
                         A = rdf_reactant
                         A.meta['id'] = reaction_num - 1
+                        A.meta['index'] = z
                     elif rules_reactant <= rdf_reactant and k == 1:
                         B = rdf_reactant
                         B.meta['id'] = reaction_num - 1
+                        B.meta['index'] = z
+                    if A and B:
+                        break
             for rules_product in reaction_containers[i].products[0].split():
-                for rdf_product in [x for x in f[reaction_num - 1].products]:
+                for m, rdf_product in enumerate(f[reaction_num - 1].products[0].split()):
                     if rules_product <= rdf_product:
                         rdf_product.meta['id'] = reaction_num - 1
+                        rdf_product.meta['index'] = m
                         products.append(rdf_product)
             if A and B and products:
                 for p in products:
                     result.add((A, p, B, True))
                     result.add((B, p, A, True))
-                    A = None
-                    B = None
+                A = None
+                B = None
         if len(result) >= 5000:
             for chunk in divide_chunks(result, 5000):
                 if len(chunk) < 5000:
                     result = set(chunk)
                 else:
-                    print(f'dumping {i}')
+                    print(f'dumping {a}')
                     with open('uspto/new_true_ATB/{}.pickle'.format(a), 'wb') as b:
                         dump(chunk, b)
                     print('dumping successful!')
