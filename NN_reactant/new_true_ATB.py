@@ -64,3 +64,5 @@ with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
             with open('uspto/new_true_ATB/{}.pickle'.format(a), 'wb') as b:
                 dump(result, b)
             print('dumping successful!')
+
+# 2 290 484 тюплов, 459 файлов‬
