@@ -1,3 +1,4 @@
+#Этот код для того что записать все продукты из тюплов в один сдф файл
 from pickle import load
 from CGRtools.files import SDFWrite
 

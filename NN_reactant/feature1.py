@@ -4,7 +4,8 @@ from pickle import load, dump
 with open('uspto/reaction_containers.pickle', 'rb') as g:
     reaction_containers = load(g)
 
-with open('uspto/all_rules_ids.pickle', 'rb') as h:
+with open('uspto/all_rules_ids.pickle', 'rb') as h:  # здесь хранятся в сетах номера всех реакций из uspto.rdf
+    # для каждлго правила (для каждого правила свой сет номеров реакций)
     ids = load(h)
 
 
@@ -15,10 +16,8 @@ def divide_chunks(o, n):
 
 
 a = 1
-c = 1
 result = set()
 A, B = None, None
-all_targets = set()
 
 with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
     for i, reactions in enumerate(ids):
@@ -42,7 +41,6 @@ with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
                         rdf_product.meta['id'] = reaction_num - 1
                         rdf_product.meta['index'] = m
                         products.append(rdf_product)
-                        all_targets.add(rdf_product)
             if A and B and products:
                 for p in products:
                     result.add((A, p, B, True))
@@ -65,20 +63,4 @@ with RDFRead('uspto/USPTO.rdf', indexable=True) as f:
             print('dumping last time...')
             with open('uspto/new_true_ATB/{}.pickle'.format(a), 'wb') as b:
                 dump(result, b)
-            print('dumping successful!')
-        if len(all_targets) >= 5000:
-            for chunk in divide_chunks(all_targets, 5000):
-                if len(chunk) < 5000:
-                    result = set(chunk)
-                else:
-                    print(f'dumping {c}')
-                    with open('uspto/all_targets/{}.pickle'.format(c), 'wb') as b:
-                        dump(chunk, b)
-                    print('dumping successful!')
-                    all_targets = set()
-                    c += 1
-        if i == len(ids) - 1:
-            print('dumping last time...')
-            with open('uspto/all_targets/{}.pickle'.format(c), 'wb') as b:
-                dump(all_targets, b)
             print('dumping successful!')
