@@ -11,13 +11,13 @@ def divide_chunks(o, n):
 
 x = 1
 result = set()
-for i in range(1, 459):
+for i in range(1, 459):   #получается я не взял последний пикл файл т.к. указал правую границу без учета +1
     with open(f'uspto/new_true_ATB/{i}.pickle', 'rb') as k:
         atb = load(k)
     for j in atb:
-        a, t, b, c = j
-        result.add((choice(all_reactants), t, b, c))
-        result.add((a, t, choice(all_reactants), c))
+        a, t, b, _ = j
+        result.add((choice(all_reactants), t, b, False))
+        result.add((a, t, choice(all_reactants), False))
     if len(result) >= 5000:
         for chunk in divide_chunks(result, 5000):
             if len(chunk) < 5000:
