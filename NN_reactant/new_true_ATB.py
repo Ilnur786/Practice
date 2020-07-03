@@ -1,3 +1,4 @@
+#Этот код предназначен для того чтобы собрать базу "позитивных" примеров (тюплы)
 from CGRtools.files import *
 from pickle import load, dump
 
