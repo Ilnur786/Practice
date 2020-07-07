@@ -26,7 +26,7 @@ true_train_molecules_signatures = set()
 
 
 true_train_set = set()
-true_lost_set = set()
+true_lost_set = 0
 true_lost_molecules_signatures = set()
 counter = 0
 a = 1
@@ -39,7 +39,7 @@ for v in range(1, 460):
         print('номер кортежа', i)
         r1, t, r2, _ = kortezh
         tmp = {bytes(r1), bytes(t), bytes(r2)}
-        if (v > 0 and v % 50 == 0) or v == 459:
+        if (v > 0 and v % 50 == 0) or (v == 459 and i == 483):
             if true_train_molecules_signatures & true_test_molecules_signatures:
                 counter += 1
                 print('есть пересечение', len(true_train_molecules_signatures & true_test_molecules_signatures))
@@ -52,7 +52,7 @@ for v in range(1, 460):
                 true_test_molecules_signatures.update(tmp)
             else:
                 print('---')
-                true_lost_set.add(kortezh)
+                true_lost_set += 1
                 true_lost_molecules_signatures.update(tmp)
         else:
             if not true_test_set or len(true_train_molecules_signatures) / len(true_test_molecules_signatures) >= 3:
@@ -85,20 +85,15 @@ for v in range(1, 460):
                     print('dumping successful!')
                     true_train_set = set()
                     q += 1
-        # if v == 459:
-        #     print('dumping last time...')
-        #     with open(f'uspto/true_base/true_test_set/{a}.pickle', 'wb') as f:
-        #         dump(true_test_set, f)
-        #     with open(f'uspto/true_base/true_train_set/{q}.pickle', 'wb') as p:
-        #         dump(true_train_set, p)
-        #     print('dumping successful!')
+        if v == 459 and i == 483:
+            print('dumping last time...')
+            with open(f'uspto/true_base/true_test_set/{a}.pickle', 'wb') as f:
+                dump(true_test_set, f)
+            with open(f'uspto/true_base/true_train_set/{q}.pickle', 'wb') as p:
+                dump(true_train_set, p)
+            print('dumping successful!')
 
 print('в true_train_set добавились все кортежи из new_true_ATB, молекулы которых не входят true_test_molecules_signatures')
-print('количество тюплов потеряно: true_lost_set =', len(true_lost_set))
-
-with open("uspto/true_base/true_lost_set.pickle", 'wb') as o:
-    dump(true_lost_set, o)
-print('true_lost_set был схранен как true_lost_set.pickle')
 
 with open("uspto/true_base/true_lost_molecules_signatures.pickle", 'wb') as n:
     dump(true_lost_molecules_signatures, n)
@@ -112,15 +107,18 @@ with open("uspto/true_base/true_test_molecules_signatures.pickle", 'wb') as j:
     dump(true_test_molecules_signatures, j)
 print('true_test_molecules_signatures был схранен как true_test_molecules_signatures.pickle')
 
+print('количество тюплов потеряно: true_lost_set =', true_lost_set)
 print('пересекалось кортежей = ', counter)
-print('количество тюплов потеряно: true_lost_set =', len(true_lost_set))
 end = time()
 print(end - start)
 #последний запуск:
-# колличество тюплов в true_test_set = 217888
-# колличество тюплов в true_train_set = 1237008
+# в true_train_set добавились все кортежи из new_true_ATB, молекулы которых не входят true_test_molecules_signatures
+# true_lost_molecules_signatures был сохранен как true_lost_molecules_signatures.pickle
+# true_train_molecules_signatures был схранен как true_train_molecules_signatures.pickle
+# true_test_molecules_signatures был схранен как true_test_molecules_signatures.pickle
+# количество тюплов потеряно: true_lost_set = 462225
 # пересекалось кортежей =  0
-# количество тюплов потеряно: true_lost_set = 325444
+# 3788.1044702529907
 
 
 
